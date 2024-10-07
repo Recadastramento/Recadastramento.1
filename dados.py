@@ -1,14 +1,11 @@
 import flet as ft
 
-# Tópicos do Cadastro
-    #por foto
-    #-------------------------------------------------------------------
+link_foto = ft.TextField(label="link")
+link_foto.value = " " # valor padrão
 matricula = ft.TextField(label="Matrícula")
 nomecompleto = ft.TextField(label="Nome")
 cpf = ft.TextField(label="CPF")
 datanascimento = ft.TextField(label="Data de Nascimento")
-
-
 sexo = ft.Dropdown(
 label="Sexo",
 options=[
@@ -130,6 +127,7 @@ options=[
     )
 
 variaveis = [
+    link_foto,
     nomecompleto,
     matricula,
     cpf,
@@ -177,6 +175,7 @@ variaveis = [
     nome_filho5,
     datanascimento_filho5,
     filho5_membro,
+    link_foto
 ]
 
 
