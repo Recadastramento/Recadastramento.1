@@ -1,17 +1,20 @@
 import flet as ft
 import pandas as pd
 import os.path
+import io
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from googleapiclient.http import MediaIoBaseUpload
 from googledrive import CadastroPIB
 from Confirmado import confirmando
 from preenchercampos import autopreencher
 from Autopreechimento import atualizar_sugestoes
-from dados import (matricula, nomecompleto, cpf,
-        datanascimento, sexo, tipo_sanguineo, 
+from dados import (
+        link_foto, matricula, nomecompleto,
+        cpf, datanascimento, sexo, tipo_sanguineo, 
         estado_civil, datacasamento, profissao, 
         naturalidade, nacionalidade,rua, complemento,
         bairro, municipio, estado, cep, tel_residencial,
@@ -46,10 +49,69 @@ def main(pagina):
         concluir_janela.open = True
         pagina.update()
     Confirmar = ft.ElevatedButton("Confirmar", on_click=preencherplanilha)
+    #-----------------------------------------------------------------------------------
+    
+
+    def upload_to_drive(file_path):
+        SCOPES = ['https://www.googleapis.com/auth/drive.file']
+
+        # Autenticação via OAuth2
+        creds = None
+        if os.path.exists("Recadastramento\\Ftoken.json"):
+            creds = Credentials.from_authorized_user_file("Recadastramento\\Ftoken.json", SCOPES)
+        
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file("Recadastramento\\credentials.json", SCOPES)
+                creds = flow.run_local_server(port=0)
+            
+            with open("Recadastramento\\Ftoken.json", 'w') as token:
+                token.write(creds.to_json())
+        
+        service = build('drive', 'v3', credentials=creds)
+
+        # Carregar o arquivo para o Google Drive
+        file_metadata = {'name': os.path.basename(file_path)}
+        media = MediaIoBaseUpload(io.FileIO(file_path, 'rb'), mimetype='image/jpeg')
+        file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+
+        # Obter o link de compartilhamento
+        file_id = file.get('id')
+        service.permissions().create(
+            fileId=file_id,
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
+
+        link = f"https://drive.google.com/thumbnail?sz=w500&id={file_id}"
+        return link
+    file_dialog = ft.FilePicker(on_result=lambda result: on_file_picked(result))
+    pagina.overlay.append(file_dialog)
+    
+    # Função executada após o arquivo ser selecionado
+    def on_file_picked(result):
+        if result.files:
+            file_path = result.files[0].path
+            pagina.snack_bar = ft.SnackBar(ft.Text("Upload in progress..."), open=True)
+            pagina.update()
+            link = upload_to_drive(file_path)
+            global link_foto
+            link_foto.value = link
+            pagina.snack_bar = ft.SnackBar(ft.Text(f"Link gerado: {link}"), open=True)
+            pagina.update()
+            print(link_foto)
+
+    # Função chamada ao clicar no botão
+    def on_upload(evento):
+        file_dialog.pick_files(allow_multiple=False)
+
+
+    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_upload)
 
 
     def completarinfo (evento):
-        autopreencher(evento, lista_nomes)
+        autopreencher(pagina, lista_nomes)
         pagina.update()    
 
     
@@ -60,7 +122,7 @@ def main(pagina):
         controls=[
             ft.Row(controls=[
                 ft.Column(controls=[
-                    matricula, nomecompleto, cpf,
+                    B_foto, matricula, nomecompleto, cpf,
                     datanascimento, sexo, tipo_sanguineo, 
                     estado_civil, datacasamento, profissao, 
                     naturalidade, nacionalidade,rua, complemento,
