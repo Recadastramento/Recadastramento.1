@@ -128,8 +128,6 @@ options=[
     ],
     value="",  # Valor padrão
     )
-
-# Supondo que todos os elementos estejam previamente definidos
 variaveis = [
     nomecompleto,
     matricula,
