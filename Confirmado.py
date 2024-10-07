@@ -4,7 +4,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from dados import (variaveis, matricula, nomecompleto, cpf,
+from dados import (variaveis, link_foto, matricula, nomecompleto, cpf,
         datanascimento, sexo, tipo_sanguineo, 
         estado_civil, datacasamento, profissao, 
         naturalidade, nacionalidade,rua, complemento,
@@ -45,8 +45,9 @@ def confirmando(evento):
         sheet = service.spreadsheets()
 
         dados = {
+                "Foto": [str(link_foto.value)],
                 "Nome Completo": [nomecompleto.value],
-                " matrícula": [str(matricula.value)], 
+                "Matrícula": [str(matricula.value)], 
                 "CPF": [str(cpf.value)], 
                 "Data de Nascimento": [str(datanascimento.value)],  
                 "Sexo": [str(sexo.value)],  
