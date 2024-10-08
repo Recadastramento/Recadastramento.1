@@ -1,13 +1,11 @@
 import flet as ft
-import pandas as pd
 import os.path
 import io
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseUpload
+from googleapiclient.http import MediaFileUpload
 from googledrive import CadastroPIB
 from Confirmado import confirmando
 from preenchercampos import autopreencher
@@ -44,58 +42,75 @@ def main(pagina):
 
     def preencherplanilha(evento):
         confirmando(evento)
+        pagina.update()
         janela_recadastro.open = False
+        concluir_janela.open = True
         pagina.update()
     Confirmar = ft.ElevatedButton("Confirmar", on_click=preencherplanilha)
     #-----------------------------------------------------------------------------------
-    
-
+    # Função para fazer upload de arquivos para o Google Drive
     def upload_to_drive(file_path):
         SCOPES = ['https://www.googleapis.com/auth/drive.file']
-
+        
         # Autenticação via OAuth2
         creds = None
-        if os.path.exists("Ftoken.json"):
-                creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
-        else:
-                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+        if os.path.exists("Recadastramento/Ftoken.json"):
+            creds = Credentials.from_authorized_user_file("Recadastramento/Ftoken.json", SCOPES)
+        
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file("Recadastramento/credentials.json", SCOPES)
                 creds = flow.run_local_server(port=0)
-                with open("Ftoken.json", 'w') as token:
-                        token.write(creds.to_json())
+            
+            with open("Recadastramento/Ftoken.json", 'w') as token:
+                token.write(creds.to_json())
         
         service = build('drive', 'v3', credentials=creds)
 
-        # Carregar o arquivo para o Google Drive
+        # Metadados do arquivo
         file_metadata = {'name': os.path.basename(file_path)}
-        media = MediaIoBaseUpload(io.FileIO(file_path, 'rb'), mimetype='image/jpeg')
+        media = MediaFileUpload(file_path, mimetype='image/jpeg')
+
+        # Criar o arquivo no Google Drive
         file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-        # Obter o link de compartilhamento
+        # Definir permissões de compartilhamento
         file_id = file.get('id')
         service.permissions().create(
             fileId=file_id,
             body={'type': 'anyone', 'role': 'reader'}
         ).execute()
 
-        link = f"https://drive.google.com/thumbnail?sz=w500&id={file_id}"
+        link = f"https://drive.google.com/thumbnail?id={file_id}"
         return link
-    file_dialog = ft.FilePicker(on_result=lambda result: on_file_picked(result))
-    pagina.overlay.append(file_dialog)
-    
-    # Função executada após o arquivo ser selecionado
+
+    # Função para lidar com a seleção do arquivo
     def on_file_picked(result):
         if result.files:
             file_path = result.files[0].path
             link = upload_to_drive(file_path)
             global link_foto
             link_foto.value = link
+            print(link_foto)
             janela_recadastro.open = False
+            concluir_janela.open = True
             pagina.update()
 
     # Função chamada ao clicar no botão
-    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_file_picked)
+    def on_upload(evento):
+        file_dialog.pick_files(allow_multiple=False)
+
+    # Criando o botão para iniciar o upload
+    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_upload)
+
+    # Inicializando o FilePicker
+    file_dialog = ft.FilePicker(on_result=on_file_picked)
+    pagina.overlay.append(file_dialog)
 
 
+    #-----------------------------------------------------------------------------------
     def completarinfo (evento):
         autopreencher(pagina, lista_nomes)
         pagina.update()    
@@ -131,7 +146,6 @@ def main(pagina):
         width=300  # largura janela(o tamanho padrão era pequeno)
     )
     )
-    pagina.overlay.append(janela_recadastro)
     # Função para abrir a janela de recadastramento
     def Recadastro(evento):
         pagina.overlay.append(janela_recadastro)  # Atribui a janela à página
@@ -169,6 +183,20 @@ def main(pagina):
             pagina.update()
 #------------------------------------------------------------
 
+#Janela confirmação
+
+    def fechar_ok(evento):
+            concluir_janela.open = False
+            pagina.update()
+
+    titulo_concluir = ft.Text("Carregamento concluído")
+    ok = ft.ElevatedButton("OK", on_click=fechar_ok)
+
+    concluir_janela = ft.AlertDialog(
+        title = titulo_concluir,
+        actions=[ok]
+    )
+    pagina.overlay.append(concluir_janela)
 
 #------------------------------------------------------------
 #Janela Login
