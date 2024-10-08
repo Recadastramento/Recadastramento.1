@@ -83,7 +83,7 @@ def main(pagina):
 
         link = f"https://drive.google.com/thumbnail?sz=w500&id={file_id}"
         return link
-    file_dialog = ft.FilePicker(on_result=lambda result: on_file_picked(result))
+    file_dialog = ft.FilePicker(on_result=lambda e: on_file_picked(file_dialog))
     pagina.overlay.append(file_dialog)
     
     # Função executada após o arquivo ser selecionado
