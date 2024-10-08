@@ -27,17 +27,17 @@ def confirmando(evento):
 
     creds = None
 
-    if os.path.exists("Recadastramento\\Stoken.json"):
-        creds = Credentials.from_authorized_user_file("Recadastramento\\Stoken.json", SCOPES)
+    if os.path.exists("Stoken.json"):
+        creds = Credentials.from_authorized_user_file("Stoken.json", SCOPES)
 
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file("Recadastramento\\credentials.json", SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
 
-        with open("Recadastramento\\Stoken.json", "w") as token:
+        with open("Stoken.json", "w") as token:
             token.write(creds.to_json())
 
     try:
