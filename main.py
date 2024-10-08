@@ -59,9 +59,9 @@ def main(pagina):
         if os.path.exists("Ftoken.json"):
             creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
         
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
+       # if not creds or not creds.valid:
+          #  if creds and creds.expired and creds.refresh_token:
+            #    creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
                 creds = flow.run_local_server(port=0)
@@ -100,11 +100,7 @@ def main(pagina):
             pagina.update()
 
     # Função chamada ao clicar no botão
-    def on_upload(evento):
-        file_dialog.pick_files(allow_multiple=False)
-
-
-    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_upload)
+    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_file_picked)
 
 
     def completarinfo (evento):
