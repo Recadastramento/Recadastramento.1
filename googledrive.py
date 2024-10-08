@@ -11,7 +11,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 # Caminho para o arquivo de credenciais JSON
 
-CLIENT_SECRET_FILE = "Recadastramento\\credentials.json"  # Altere para o seu caminho
+CLIENT_SECRET_FILE = "credentials.json"  # Altere para o seu caminho
 
 # Verificar se o token de acesso já existe
 if os.path.exists("Dtoken.json"):
