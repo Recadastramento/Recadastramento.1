@@ -55,17 +55,17 @@ def main(pagina):
 
         # Autenticação via OAuth2
         creds = None
-        if os.path.exists("FGtoken.json"):
-            creds = Credentials.from_authorized_user_file("FGtoken.json", SCOPES)
+        if os.path.exists("Ftoken.json"):
+            creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
         
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file("Gcredentials.json", SCOPES)
-                creds = flow.run_local_server(port=8080)
+                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+                creds = flow.run_local_server(port=0)
             
-            with open("FGtoken.json", 'w') as token:
+            with open("Ftoken.json", 'w') as token:
                 token.write(creds.to_json())
         
         service = build('drive', 'v3', credentials=creds)
@@ -84,37 +84,27 @@ def main(pagina):
 
         link = f"https://drive.google.com/thumbnail?sz=w500&id={file_id}"
         return link
-    
-    file_dialog = ft.FilePicker(on_result=lambda e: on_file_picked(e))
+    file_dialog = ft.FilePicker(on_result=lambda result: on_file_picked(result))
     pagina.overlay.append(file_dialog)
-
+    
     # Função executada após o arquivo ser selecionado
-    def on_file_picked(event):
-        if event.files:
-            file_path = event.files[0].path
-            if file_path:
-                try:
-                    link = upload_to_drive(file_path)
-                    if link:
-                        global link_foto
-                        link_foto.value = link
-                        print(link_foto)
-                        janela_recadastro.open = False
-                        concluir_janela.open = True
-                        pagina.update()
-                    else:
-                        print("Error uploading file to Google Drive")
-                except Exception as e:
-                    print(f"Error uploading file to Google Drive: {e}")
-            else:
-                print("No file path selected")
-        else:
-            print("No files selected")
+    def on_file_picked(result):
+        if result.files:
+            file_path = result.files[0].path
+            link = upload_to_drive(file_path)
+            global link_foto
+            link_foto.value = link
+            print(link_foto)
+            janela_recadastro.open = False
+            concluir_janela.open = True
+            pagina.update()
 
-    # Button to trigger the file picker
-    B_foto = ft.ElevatedButton("Inserir foto", on_click=lambda e: file_dialog.pick_files())
+    # Função chamada ao clicar no botão
+    def on_upload(evento):
+        file_dialog.pick_files(allow_multiple=False)
 
 
+    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_upload)
 
 
     def completarinfo (evento):
@@ -168,8 +158,6 @@ def main(pagina):
                 if Senhas.index(Senha.value) == Usuarios.index(Nome_usuario.value):
                     Nome_usuario.value = ""
                     Senha.value = ""
-                    pagina.remove(Rc)
-                    pagina.remove(botao_iniciar)
                     janela.open = False
                     pagina.add(lista_nomes)
                     pagina.add(sugestoes)
@@ -218,16 +206,9 @@ def main(pagina):
     )
     
     # Função para abrir a janela de login
-    def Abrir_popup(evento):
-        pagina.overlay.append(janela)
-        janela.open = True
-        pagina.update()   
+    pagina.overlay.append(janela)
+    janela.open = True
+    pagina.update()   
 
-    
-    botao_iniciar = ft.ElevatedButton("Login", on_click=Abrir_popup)
-    pagina.add(Rc)
-    pagina.add(botao_iniciar)
-
-    # Função para verificar e modificar os valores vazios, interrompendo o processo
 
 ft.app(main)
