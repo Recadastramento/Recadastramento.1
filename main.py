@@ -1,12 +1,10 @@
 import flet as ft
-import pandas as pd
 import os.path
 import io
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
 from googledrive import CadastroPIB
 from Confirmado import confirmando
@@ -44,6 +42,7 @@ def main(pagina):
 
     def preencherplanilha(evento):
         confirmando(evento)
+        pagina.update()
         janela_recadastro.open = False
         concluir_janela.open = True
         pagina.update()
@@ -57,12 +56,17 @@ def main(pagina):
         # Autenticação via OAuth2
         creds = None
         if os.path.exists("Ftoken.json"):
-                creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
-        else:
+            creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
+        
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
                 flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
                 creds = flow.run_local_server(port=0)
-                with open("Ftoken.json", 'w') as token:
-                        token.write(creds.to_json())
+            
+            with open("Ftoken.json", 'w') as token:
+                token.write(creds.to_json())
         
         service = build('drive', 'v3', credentials=creds)
 
@@ -90,12 +94,18 @@ def main(pagina):
             link = upload_to_drive(file_path)
             global link_foto
             link_foto.value = link
+            pagina.update()
+            print(link_foto)
             janela_recadastro.open = False
             concluir_janela.open = True
             pagina.update()
 
     # Função chamada ao clicar no botão
-    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_file_picked)
+    def on_upload(evento):
+        file_dialog.pick_files(allow_multiple=False)
+
+
+    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_upload)
 
 
     def completarinfo (evento):
