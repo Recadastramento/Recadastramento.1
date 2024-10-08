@@ -141,7 +141,6 @@ def main(pagina):
         width=300  # largura janela(o tamanho padrão era pequeno)
     )
     )
-    pagina.overlay.append(janela_recadastro)
     # Função para abrir a janela de recadastramento
     def Recadastro(evento):
         pagina.overlay.append(janela_recadastro)  # Atribui a janela à página
