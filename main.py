@@ -42,6 +42,7 @@ def main(pagina):
 
     def preencherplanilha(evento):
         confirmando(evento)
+        pagina.update()
         janela_recadastro.open = False
         concluir_janela.open = True
         pagina.update()
@@ -54,17 +55,17 @@ def main(pagina):
 
         # Autenticação via OAuth2
         creds = None
-        if os.path.exists("Ftoken.json"):
-            creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
+        if os.path.exists("FGtoken.json"):
+            creds = Credentials.from_authorized_user_file("FGtoken.json", SCOPES)
         
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
-                creds = flow.run_local_server(port=0)
+                flow = InstalledAppFlow.from_client_secrets_file("Gcredentials.json", SCOPES)
+                creds = flow.run_local_server(port=8080)
             
-            with open("Ftoken.json", 'w') as token:
+            with open("FGFtoken.json", 'w') as token:
                 token.write(creds.to_json())
         
         service = build('drive', 'v3', credentials=creds)
@@ -83,10 +84,7 @@ def main(pagina):
 
         link = f"https://drive.google.com/thumbnail?sz=w500&id={file_id}"
         return link
-    file_dialog = ft.FilePicker(on_result=lambda e: on_file_picked(file_dialog))
-    pagina.overlay.append(file_dialog)
     
-    # Função executada após o arquivo ser selecionado
     file_dialog = ft.FilePicker(on_result=lambda e: on_file_picked(e))
     pagina.overlay.append(file_dialog)
 
@@ -117,7 +115,8 @@ def main(pagina):
     B_foto = ft.ElevatedButton("Inserir foto", on_click=lambda e: file_dialog.pick_files())
 
 
-        
+
+
     def completarinfo (evento):
         autopreencher(pagina, lista_nomes)
         pagina.update()    
