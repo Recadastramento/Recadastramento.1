@@ -70,7 +70,7 @@ def main(pagina):
         service = build('drive', 'v3', credentials=creds)
 
         # Carregar o arquivo para o Google Drive
-        file_metadata = {'name': os.path.basename(file_path)}
+        file_metadata = {'name': os.path.basename(os.path.abspath(file_path))}
         media = MediaIoBaseUpload(io.FileIO(file_path, 'rb'), mimetype='image/jpeg')
         file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
