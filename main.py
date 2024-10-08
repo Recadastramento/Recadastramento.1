@@ -87,28 +87,30 @@ def main(pagina):
     pagina.overlay.append(file_dialog)
     
     # Função executada após o arquivo ser selecionado
-    def on_file_picked(result):
-        if result is not None:
-            if result.files:
-                file_path = result.files[0].path
+    def on_file_picked(file_dialog):
+        if file_dialog.result:
+            if file_dialog.result.files:
+                file_path = file_dialog.result.files[0].path
                 if file_path:
-                    link = upload_to_drive(file_path)
-                    if link:
-                        global link_foto
-                        link_foto.value = link
-                        print(link_foto)
-                        janela_recadastro.open = False
-                        concluir_janela.open = True
-                        pagina.update()
-                    else:
-                        print("Error uploading file to Google Drive")
+                    try:
+                        link = upload_to_drive(file_path)
+                        if link:
+                            global link_foto
+                            link_foto.value = link
+                            print(link_foto)
+                            janela_recadastro.open = False
+                            concluir_janela.open = True
+                            pagina.update()
+                        else:
+                            print("Error uploading file to Google Drive")
+                    except Exception as e:
+                        print(f"Error uploading file to Google Drive: {e}")
                 else:
                     print("No file path selected")
             else:
                 print("No files selected")
         else:
             print("No result returned from file picker")
-
 
     B_foto = ft.ElevatedButton("Inserir foto", on_click=on_file_picked)
 
