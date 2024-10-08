@@ -6,6 +6,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaIoBaseUpload
 from googledrive import CadastroPIB
 from Confirmado import confirmando
 from preenchercampos import autopreencher
@@ -48,66 +49,63 @@ def main(pagina):
         pagina.update()
     Confirmar = ft.ElevatedButton("Confirmar", on_click=preencherplanilha)
     #-----------------------------------------------------------------------------------
-    # Função para fazer upload de arquivos para o Google Drive
     def upload_to_drive(file_path):
+        # O seu código para upload para Google Drive aqui
         SCOPES = ['https://www.googleapis.com/auth/drive.file']
-        
-        # Autenticação via OAuth2
         creds = None
+
+        # Autenticação via OAuth2
         if os.path.exists("Ftoken.json"):
             creds = Credentials.from_authorized_user_file("Ftoken.json", SCOPES)
-        
+
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
                 creds = flow.run_local_server(port=0)
-            
+                
             with open("Ftoken.json", 'w') as token:
                 token.write(creds.to_json())
-        
+
         service = build('drive', 'v3', credentials=creds)
 
-        # Metadados do arquivo
+        # Carregar o arquivo para o Google Drive
         file_metadata = {'name': os.path.basename(file_path)}
-        media = MediaFileUpload(file_path, mimetype='image/jpeg')
-
-        # Criar o arquivo no Google Drive
+        media = MediaIoBaseUpload(io.FileIO(file_path, 'rb'), mimetype='image/jpeg')
         file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
 
-        # Definir permissões de compartilhamento
+        # Permitir o acesso público
         file_id = file.get('id')
         service.permissions().create(
             fileId=file_id,
             body={'type': 'anyone', 'role': 'reader'}
         ).execute()
 
-        link = f"https://drive.google.com/thumbnail?id={file_id}"
-        return link
+        return f"https://drive.google.com/thumbnail?sz=w500&id={file_id}"
 
-    # Função para lidar com a seleção do arquivo
+    # Função executada após o arquivo ser selecionado
     def on_file_picked(result):
         if result.files:
             file_path = result.files[0].path
+            print(f"Arquivo selecionado: {file_path}")
             link = upload_to_drive(file_path)
-            global link_foto
-            link_foto.value = link
-            print(link_foto)
-            janela_recadastro.open = False
-            concluir_janela.open = True
-            pagina.update()
+            if link:
+                global link_foto
+                link_foto.value = link
+                print(link_foto)
+                janela_recadastro.open = False
+                concluir_janela.open = True
+                pagina.update()
+            else:
+                print("Falha no upload. Tente novamente.")
 
-    # Função chamada ao clicar no botão
-    def on_upload(evento):
-        file_dialog.pick_files(allow_multiple=False)
+    # Configuração do FilePicker
+    file_picker = ft.FilePicker(on_result=on_file_picked)
+    pagina.overlay.append(file_picker)
 
-    # Criando o botão para iniciar o upload
-    B_foto = ft.ElevatedButton("Inserir foto", on_click=on_upload)
-
-    # Inicializando o FilePicker
-    file_dialog = ft.FilePicker(on_result=on_file_picked)
-    pagina.overlay.append(file_dialog)
+    # Botão para selecionar arquivo
+    B_foto = ft.ElevatedButton("Inserir foto", on_click=lambda _: file_picker.pick_files(allow_multiple=False))
 
 
     #-----------------------------------------------------------------------------------
