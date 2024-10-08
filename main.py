@@ -65,7 +65,7 @@ def main(pagina):
                 flow = InstalledAppFlow.from_client_secrets_file("Gcredentials.json", SCOPES)
                 creds = flow.run_local_server(port=8080)
             
-            with open("FGFtoken.json", 'w') as token:
+            with open("FGtoken.json", 'w') as token:
                 token.write(creds.to_json())
         
         service = build('drive', 'v3', credentials=creds)
