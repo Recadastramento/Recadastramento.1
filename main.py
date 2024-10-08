@@ -44,7 +44,6 @@ def main(pagina):
 
     def preencherplanilha(evento):
         confirmando(evento)
-        pagina.update()
         janela_recadastro.open = False
         concluir_janela.open = True
         pagina.update()
@@ -96,8 +95,6 @@ def main(pagina):
             link = upload_to_drive(file_path)
             global link_foto
             link_foto.value = link
-            pagina.update()
-            print(link_foto)
             janela_recadastro.open = False
             concluir_janela.open = True
             pagina.update()
