@@ -99,7 +99,7 @@ def main(pagina):
             pagina.update()
             print(link_foto)
             janela_recadastro.open = False
-            concluir_foto.open = True
+            concluir_janela.open = True
             pagina.update()
 
     # Função chamada ao clicar no botão
@@ -182,27 +182,14 @@ def main(pagina):
             Senha.value = ""
             pagina.update()
 #------------------------------------------------------------
-#janela de confirmação de foto enviada
-    def foto_enviada(evento):
-            concluir_foto.open = False
-            pagina.update()
 
-    concluido_foto = ft.Text("Envio da foto concluído")
-    foto_ok = ft.ElevatedButton("OK", on_click=foto_enviada)
-
-    concluir_foto = ft.AlertDialog(
-        title = concluido_foto,
-        actions=[foto_ok]
-    )
-    pagina.overlay.append(concluir_foto)
-
-#Janela confirmação de cadastro feito
+#Janela confirmação
 
     def fechar_ok(evento):
             concluir_janela.open = False
             pagina.update()
 
-    titulo_concluir = ft.Text("Cadastro concluído")
+    titulo_concluir = ft.Text("Carregamento concluído")
     ok = ft.ElevatedButton("OK", on_click=fechar_ok)
 
     concluir_janela = ft.AlertDialog(
