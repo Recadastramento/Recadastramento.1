@@ -1,6 +1,4 @@
 import flet as ft
-import webbrowser
-import webview
 from googledrive import CadastroPIB
 from Confirmado import confirmando
 from preenchercampos import autopreencher
@@ -46,8 +44,7 @@ def main(pagina):
     
     # Botão para abrir o Google
     def abrirgoogle(evento):
-            url= "https://www.google.com/"
-            webbrowser.open(url)
+        pagina.launch_url('https://www.google.com.br')
     B_abrirgoogle = ft.ElevatedButton("Inserir foto", on_click=abrirgoogle)
 
     #-----------------------------------------------------------------------------------
