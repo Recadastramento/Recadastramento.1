@@ -23,7 +23,7 @@ from dados import (variaveis, link_foto, matricula, nomecompleto, cpf,
 def confirmando(evento):
     SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
     SPREADSHEET_ID = "197dGyWjtAVUVR2K8eODfIxfrEFgeErTcxMhp3OIX8N0"
-    RANGE_NAME = "Dados!A1:AY3000"
+    RANGE_NAME = "Dados!B1:AY3000"
 
     creds = None
 
