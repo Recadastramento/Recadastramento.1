@@ -1,6 +1,5 @@
 import flet as ft
 import webbrowser
-import pyautogui as py
 import webview
 from googledrive import CadastroPIB
 from Confirmado import confirmando
