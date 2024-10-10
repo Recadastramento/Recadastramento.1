@@ -44,7 +44,7 @@ def main(pagina):
     
     # Botão para abrir o Google
     def abrirgoogle(evento):
-        pagina.launch_url('https://www.google.com.br')
+        pagina.launch_url('https://foto-flat.onrender.com/')
     B_abrirgoogle = ft.ElevatedButton("Inserir foto", on_click=abrirgoogle)
 
     #-----------------------------------------------------------------------------------
